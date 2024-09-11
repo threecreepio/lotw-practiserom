@@ -1,0 +1,18 @@
+
+MEMORY {
+INES: start = 0, size = $10, fill=yes, fillval=$00, type=ro;
+PRG0:  start = $8000, size = $12000, fill=no, type=ro, bank=0;
+PRG8:  start = $A000, size = $2000, fill=no, type=ro, bank=8;
+PRG9:  start = $8000, size = $4000, fill=no, type=ro, bank=9;
+PRG10: start = $8000, size = $8000, fill=no, type=ro, bank=10;
+CHR: start = 0, size = 65536, fill=no, type=ro;
+}
+
+SEGMENTS {
+INES: load = INES, type = ro;
+PRG0: load = PRG0, type = ro;
+PRG8: load = PRG8, type = ro;
+PRG9: load = PRG9, type = ro;
+PRG10: load = PRG10, type = ro;
+CHR: load = CHR, type = ro;
+}

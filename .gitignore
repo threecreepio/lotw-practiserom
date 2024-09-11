@@ -1,0 +1,6 @@
+*.o
+*.dep
+*.nes
+*.dbg.nes
+*.nes.map
+*.dbg
