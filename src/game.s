@@ -1789,7 +1789,7 @@ MMC3UseCommonBank:
   sta MMC3_RegBankData                            ;
   rts                                             ; done!
 
-L_14_1CD2C:
+RunPlayerMovement:
   sty Tmp9                                        ; store and reload player speed.
   ldy Tmp9                                        ;
   BEQ B_14_1CD67                                  ;  1CD30 CD30 C F0 35           F:001373
@@ -2832,7 +2832,7 @@ HandlePlayerControls:
   bcc :-                                          ; loop until all speed boosts checked
   ldy #$6                                         ; max out at 6
 @HandleMovement:
-  JSR L_14_1CD2C                                  ;  1D495 D495 C 20 2C CD        F:001373
+  JSR RunPlayerMovement                                  ;  1D495 D495 C 20 2C CD        F:001373
   LDA PlayerFallHeight                                      ;  1D498 D498 C A5 4E           F:001373
   BNE B_14_1D4C2                                  ;  1D49A D49A C D0 26           F:001373
   lda PlayerJumpProgress                          ; check if jump is in progress
@@ -3412,10 +3412,10 @@ LoadNewArea:
 
 L_14_1D8AF:
   JSR SelectPlayerSprite1                                  ;  1D8AF D8AF C 20 E3 D8        F:001373
-  JSR L_14_1D94E                                  ;  1D8B2 D8B2 C 20 4E D9        F:001373
+  JSR RunPlayerAnimation                                  ;  1D8B2 D8B2 C 20 4E D9        F:001373
   RTS                                             ;  1D8B5 D8B5 C 60              F:001373
 
-L_14_1D8B6:
+RunPlayerMovement2:
   LDA PlayerXPx                                      ;  1D8B6 D8B6 C A5 43           F:001373
   STA TmpE                                      ;  1D8B8 D8B8 C 85 0E           F:001373
   LDA PlayerXTile                                      ;  1D8BA D8BA C A5 44           F:001373
@@ -3512,7 +3512,7 @@ B_14_1D941:
   STY PlayerSpriteAttr                                      ;  1D94B D94B C 84 57           F:001373
   RTS                                             ;  1D94D D94D C 60              F:001373
 
-L_14_1D94E:
+RunPlayerAnimation:
   LDA PlayerStunTimer                                      ;  1D94E D94E C A5 46           F:001373
   BNE B_14_1D967                                  ;  1D950 D950 C D0 15           F:001373
   LDA PlayerSpriteTile                                      ;  1D952 D952 C A5 56           F:001373
@@ -3560,7 +3560,7 @@ L_14_1D991:
   LDA PlayerMovingDirection                                      ;  1D994 D994 C A5 49           F:001373
   PHA                                             ;  1D996 D996 C 48              F:001373
 B_14_1D997:
-  JSR L_14_1D8B6                                  ;  1D997 D997 C 20 B6 D8        F:001373
+  JSR RunPlayerMovement2                                  ;  1D997 D997 C 20 B6 D8        F:001373
   JSR EnsureNextPositionIsValid                                  ;  1D99A D99A C 20 08 CF        F:001373
   BCC B_14_1D9A7                                  ;  1D99D D99D C 90 08           F:001373
   JSR L_14_1D6D4                                  ;  1D99F D99F C 20 D4 D6        F:001470
@@ -5216,8 +5216,8 @@ L_15_1E514:
   LDA JoypadInput                                      ;  1E521 E521 C A5 20           F:009154
   AND #$F                                         ;  1E523 E523 C 29 0F           F:009154
   LDY #$1                                         ;  1E525 E525 C A0 01           F:009154
-  JSR L_14_1CD2C                                  ;  1E527 E527 C 20 2C CD        F:009154
-  JSR L_14_1D8B6                                  ;  1E52A E52A C 20 B6 D8        F:009154
+  JSR RunPlayerMovement                                  ;  1E527 E527 C 20 2C CD        F:009154
+  JSR RunPlayerMovement2                                  ;  1E52A E52A C 20 B6 D8        F:009154
   LDA TmpA                                      ;  1E52D E52D C A5 0A           F:009154
   CMP #$8C                                        ;  1E52F E52F C C9 8C           F:009154
   BCC B_15_1E54F                                  ;  1E531 E531 C 90 1C           F:009154
@@ -5237,7 +5237,7 @@ L_15_1E514:
   STA PlayerYPx                                      ;  1E54D E54D C 85 45           F:009154
 B_15_1E54F:
   JSR SelectPlayerSprite1                                  ;  1E54F E54F C 20 E3 D8        F:009154
-  JSR L_14_1D94E                                  ;  1E552 E552 C 20 4E D9        F:009154
+  JSR RunPlayerAnimation                                  ;  1E552 E552 C 20 4E D9        F:009154
   JSR UpdatePlayerSprites                                  ;  1E555 E555 C 20 D8 C1        F:009154
   jsr WaitForCountdownTimer                       ; wait for timer to finish
   JMP L_15_1E514                                  ;  1E55B E55B C 4C 14 E5        F:009155
@@ -5251,51 +5251,49 @@ B_15_1E560:
   RTS                                             ;  1E561 E561 C 60              F:009155
 
 RunPauseScreenMovement:
-  LDA #$1                                         ;  1E562 E562 C A9 01           F:000871
-  STA FrameCountdownTimer                                      ;  1E564 E564 C 85 36           F:000871
-  JSR ReadJoypad                                  ;  1E566 E566 C 20 43 CC        F:000871
-  LDA JoypadInput                                      ;  1E569 E569 C A5 20           F:000871
-  AND #$80                                        ;  1E56B E56B C 29 80           F:000871
-  BNE B_15_1E5B0                                  ;  1E56D E56D C D0 41           F:000871
-  LDA JoypadInput                                      ;  1E56F E56F C A5 20           F:000871
-  AND #$F                                         ;  1E571 E571 C 29 0F           F:000871
-  LDY #$1                                         ;  1E573 E573 C A0 01           F:000871
-  JSR L_14_1CD2C                                  ;  1E575 E575 C 20 2C CD        F:000871
-  JSR L_14_1D8B6                                  ;  1E578 E578 C 20 B6 D8        F:000871
-  LDA TmpA                                      ;  1E57B E57B C A5 0A           F:000871
-  CMP #$20                                        ;  1E57D E57D C C9 20           F:000871
-  BCC B_15_1E5A1                                  ;  1E57F E57F C 90 20           F:000871
-  CMP #$A1                                        ;  1E581 E581 C C9 A1           F:000871
-  BCS B_15_1E5B2                                  ;  1E583 E583 C B0 2D           F:000871
-  LDA TmpF                                      ;  1E585 E585 C A5 0F           F:000871
-  AND #$F                                         ;  1E587 E587 C 29 0F           F:000871
-  CMP #$1                                         ;  1E589 E589 C C9 01           F:000871
-  BCC B_15_1E5A1                                  ;  1E58B E58B C 90 14           F:000871
-  CMP #$F                                         ;  1E58D E58D C C9 0F           F:000871
-  BCC B_15_1E595                                  ;  1E58F E58F C 90 04           F:000871
-  LDA TmpE                                      ;  1E591 E591 . A5 0E           
-  BNE B_15_1E5A1                                  ;  1E593 E593 . D0 0C           
-B_15_1E595:
-  LDA TmpE                                      ;  1E595 E595 C A5 0E           F:000871
-  STA PlayerXPx                                      ;  1E597 E597 C 85 43           F:000871
-  LDA TmpF                                      ;  1E599 E599 C A5 0F           F:000871
-  STA PlayerXTile                                      ;  1E59B E59B C 85 44           F:000871
-  LDA TmpA                                      ;  1E59D E59D C A5 0A           F:000871
-  STA PlayerYPx                                      ;  1E59F E59F C 85 45           F:000871
-B_15_1E5A1:
-  JSR SelectPlayerSprite1                                  ;  1E5A1 E5A1 C 20 E3 D8        F:000871
-  JSR L_14_1D94E                                  ;  1E5A4 E5A4 C 20 4E D9        F:000871
-  JSR UpdatePlayerSprites                                  ;  1E5A7 E5A7 C 20 D8 C1        F:000871
+  lda #$1                                         ; set short delay
+  sta FrameCountdownTimer                         ;
+  jsr ReadJoypad                                  ; check joypad
+  lda JoypadInput                                 ;
+  and #CtlA                                       ; is A held?
+  bne @ExitCLC                                    ; if so, exit
+  lda JoypadInput                                 ; otherwise check for d-pad movement
+  and #%00001111                                  ;
+  ldy #$1                                         ; force 1 speed on menu
+  jsr RunPlayerMovement                           ; and run movement code
+  jsr RunPlayerMovement2                          ;
+  lda TmpA                                        ; get next player Y position
+  cmp #$20                                        ; prevent moving off top of screen
+  bcc @MovementDone                               ;
+  cmp #$A1                                        ; are we exiting the bottom end of the screen?
+  bcs @ExitSEC                                    ; if so - leave the function
+  lda TmpF                                        ; check next player x tile 
+  and #%00001111                                  ;
+  cmp #$1                                         ; prevent moving off left of screen
+  bcc @MovementDone                               ;
+  cmp #$F                                         ; prevent moving off right of screen
+  bcc @UpdatePlayerPosition                       ;
+  lda TmpE                                        ;
+  BNE @MovementDone                                  ;  1E593 E593 . D0 0C           
+@UpdatePlayerPosition:
+  LDA TmpE                                        ; copy temp values to player position
+  STA PlayerXPx                                   ;
+  LDA TmpF                                        ;
+  STA PlayerXTile                                 ;
+  LDA TmpA                                        ;
+  STA PlayerYPx                                   ;
+@MovementDone:
+  jsr SelectPlayerSprite1                         ; update sprite
+  jsr RunPlayerAnimation                          ;
+  jsr UpdatePlayerSprites                         ;
   jsr WaitForCountdownTimer                       ; wait for timer to finish
-  JMP RunPauseScreenMovement                                  ;  1E5AD E5AD C 4C 62 E5        F:000872
-
-B_15_1E5B0:
-  CLC                                             ;  1E5B0 E5B0 C 18              F:041644
-  RTS                                             ;  1E5B1 E5B1 C 60              F:041644
-
-B_15_1E5B2:
-  SEC                                             ;  1E5B2 E5B2 C 38              F:000915
-  RTS                                             ;  1E5B3 E5B3 C 60              F:000915
+  jmp RunPauseScreenMovement                      ; and loop back around
+@ExitCLC:
+  clc                                             ;
+  rts                                             ; done!
+@ExitSEC:
+  sec                                             ;
+  rts                                             ; done!
 
 L_15_1E5B4:
   LDA #$1                                         ;  1E5B4 E5B4 C A9 01           F:000219
@@ -5307,8 +5305,8 @@ L_15_1E5B4:
   LDA JoypadInput                                      ;  1E5C1 E5C1 C A5 20           F:000219
   AND #$F                                         ;  1E5C3 E5C3 C 29 0F           F:000219
   LDY #$1                                         ;  1E5C5 E5C5 C A0 01           F:000219
-  JSR L_14_1CD2C                                  ;  1E5C7 E5C7 C 20 2C CD        F:000219
-  JSR L_14_1D8B6                                  ;  1E5CA E5CA C 20 B6 D8        F:000219
+  JSR RunPlayerMovement                                  ;  1E5C7 E5C7 C 20 2C CD        F:000219
+  JSR RunPlayerMovement2                                  ;  1E5CA E5CA C 20 B6 D8        F:000219
   LDA TmpA                                      ;  1E5CD E5CD C A5 0A           F:000219
   CMP #$30                                        ;  1E5CF E5CF C C9 30           F:000219
   BCC B_15_1E5F3                                  ;  1E5D1 E5D1 C 90 20           F:000219
