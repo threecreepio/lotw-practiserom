@@ -2105,60 +2105,58 @@ B_14_1CF2E:
   RTS                                             ;  1CF2F CF2F C 60              F:007626
 
 PauseMenu_DrawInventory:
-  LDX #$F                                         ;  1CF30 CF30 C A2 0F           F:000826
-B_14_1CF32:
-  TXA                                             ;  1CF32 CF32 C 8A              F:000826
-  PHA                                             ;  1CF33 CF33 C 48              F:000826
-  LDY PlayerInventory,X                                    ;  1CF34 CF34 C B4 60           F:000826
-  JSR L_14_1CF3F                                  ;  1CF36 CF36 C 20 3F CF        F:000826
-  PLA                                             ;  1CF39 CF39 C 68              F:000827
-  TAX                                             ;  1CF3A CF3A C AA              F:000827
-  DEX                                             ;  1CF3B CF3B C CA              F:000827
-  BPL B_14_1CF32                                  ;  1CF3C CF3C C 10 F4           F:000827
-  RTS                                             ;  1CF3E CF3E C 60              F:000842
+  ldx #$F                                         ; start at final inventory slot
+: txa                                             ;
+  pha                                             ; store slot on stack
+  ldy PlayerInventory,x                           ; get quantity
+  jsr @DrawSingleItem                             ; and draw the item
+  pla                                             ;
+  tax                                             ; restore slot from stack
+  dex                                             ;
+  bpl :-                                          ; and loop until all are drawn
+  rts                                             ;
 
-L_14_1CF3F:
-  TXA                                             ;  1CF3F CF3F C 8A              F:000826
-  PHA                                             ;  1CF40 CF40 C 48              F:000826
-  TXA                                             ;  1CF41 CF41 C 8A              F:000826
-  AND #$7                                         ;  1CF42 CF42 C 29 07           F:000826
-  ASL                                             ;  1CF44 CF44 C 0A              F:000826
-  ASL                                             ;  1CF45 CF45 C 0A              F:000826
-  STA PPUUpdateAddrLo                                      ;  1CF46 CF46 C 85 16           F:000826
-  TXA                                             ;  1CF48 CF48 C 8A              F:000826
-  AND #$8                                         ;  1CF49 CF49 C 29 08           F:000826
-  ASL                                             ;  1CF4B CF4B C 0A              F:000826
-  ASL                                             ;  1CF4C CF4C C 0A              F:000826
-  ASL                                             ;  1CF4D CF4D C 0A              F:000826
-  ASL                                             ;  1CF4E CF4E C 0A              F:000826
-  ORA PPUUpdateAddrLo                                      ;  1CF4F CF4F C 05 16           F:000826
-  STA PPUUpdateAddrLo                                      ;  1CF51 CF51 C 85 16           F:000826
-  LDA #$0                                         ;  1CF53 CF53 C A9 00           F:000826
-  STA PPUUpdateAddrHi                                      ;  1CF55 CF55 C 85 17           F:000826
-  CLC                                             ;  1CF57 CF57 C 18              F:000826
-  LDA #$C2                                        ;  1CF58 CF58 C A9 C2           F:000826
-  ADC PPUUpdateAddrLo                                      ;  1CF5A CF5A C 65 16           F:000826
-  STA PPUUpdateAddrLo                                      ;  1CF5C CF5C C 85 16           F:000826
-  LDA #$20                                        ;  1CF5E CF5E C A9 20           F:000826
-  ADC PPUUpdateAddrHi                                      ;  1CF60 CF60 C 65 17           F:000826
-  STA PPUUpdateAddrHi                                      ;  1CF62 CF62 C 85 17           F:000826
-  TYA                                             ;  1CF64 CF64 C 98              F:000826
-  JSR WriteNumberToPPUUpdateData                                  ;  1CF65 CF65 C 20 F9 CF        F:000826
-  PLA                                             ;  1CF68 CF68 C 68              F:000826
-  JSR CanPlayerEquipItem                                  ;  1CF69 CF69 C 20 17 D0        F:000826
-  BCS B_14_1CF7C                                  ;  1CF6C CF6C C B0 0E           F:000826
-  LDA PPUUpdateData                                      ;  1CF6E CF6E C A5 18           F:000826
-  SEC                                             ;  1CF70 CF70 C 38              F:000826
-  SBC #$40                                        ;  1CF71 CF71 C E9 40           F:000826
-  STA PPUUpdateData                                      ;  1CF73 CF73 C 85 18           F:000826
-  LDA PPUUpdateData+1                                      ;  1CF75 CF75 C A5 19           F:000826
-  SEC                                             ;  1CF77 CF77 C 38              F:000826
-  SBC #$40                                        ;  1CF78 CF78 C E9 40           F:000826
-  STA PPUUpdateData+1                                      ;  1CF7A CF7A C 85 19           F:000826
-B_14_1CF7C:
-  LDA #PPUOps_WriteBuffer                                       ;  1CF7C CF7C C A9 06           F:000826
-  JSR RunPPUOp                                  ;  1CF7E CF7E C 20 8F CC        F:000826
-  RTS                                             ;  1CF81 CF81 C 60              F:000827
+@DrawSingleItem:
+  txa                                             ; do some dumb stuff
+  pha                                             ;
+  txa                                             ;
+  and #%00000111                                  ; take low bits
+  asl a                                           ; and multiply by 4 to get part of low address to draw at
+  asl a                                           ;
+  sta PPUUpdateAddrLo                             ;
+  txa                                             ; restore slot number
+  and #%00001000                                  ;
+  asl a                                           ; multiply by 16
+  asl a                                           ;
+  asl a                                           ;
+  asl a                                           ;
+  ora PPUUpdateAddrLo                             ; append to previous value for low position
+  sta PPUUpdateAddrLo                             ;
+  lda #$0                                         ; clear high byte
+  sta PPUUpdateAddrHi                             ;
+  clc                                             ;
+  lda #<$20C2                                     ; move to final ppu position
+  adc PPUUpdateAddrLo                             ;
+  sta PPUUpdateAddrLo                             ;
+  lda #>$20C2                                     ;
+  adc PPUUpdateAddrHi                             ;
+  sta PPUUpdateAddrHi                             ;
+  tya                                             ; get quantity value
+  jsr WriteNumberToPPUUpdateData                  ; and write the number!
+  pla                                             ; restore slot number from stack
+  jsr CanPlayerEquipItem                          ; check if the current character can use the item
+  bcs :+                                          ; if we can, skip ahead
+  lda PPUUpdateData                               ; otherwise offset values to print unequippables
+  sec                                             ;
+  sbc #$40                                        ;
+  sta PPUUpdateData                               ;
+  lda PPUUpdateData+1                             ;
+  sec                                             ;
+  sbc #$40                                        ;
+  sta PPUUpdateData+1                             ;
+: lda #PPUOps_WriteBuffer                         ; trigger drawing the item
+  jsr RunPPUOp                                    ;
+  rts                                             ; done!
 
 PauseMenuAttrStrength = $21DE
 PauseMenuAttrJump     = $221E
