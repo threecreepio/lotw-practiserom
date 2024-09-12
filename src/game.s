@@ -382,15 +382,15 @@ L_14_1C2DB:
   and #%01000000                                  ; are we inverting the sprite?
   bne @Flipped                                    ; if so - set tiles backwards
   lda Ent0Data,y                                  ; get entity sprite
-  sta SprX,X                                      ;
+  sta SprTile,X                                      ;
   adc #$2                                         ; get second side
-  sta SprX+4,X                                    ;
+  sta SprTile+4,X                                    ;
   jmp :+                                          ; and continue
 @Flipped:
   lda Ent0Data,y                                  ; get entity sprite
-  sta SprX+4,x                                    ; and update in inverted order
+  sta SprTile+4,x                                    ; and update in inverted order
   adc #$2                                         ;
-  sta SprX,x                                      ;
+  sta SprTile,x                                      ;
 : lda Ent0Data+Ent_XPx,y                          ; get position inside tile
   sec                                             ;
   sbc CameraXPx                                   ; offset by camera pixel
@@ -419,10 +419,10 @@ L_14_1C2DB:
 : lda Tmp8                                        ; are we too far right to show both sprites?
   cmp #$EF                                        ;
   bcs @ShowSingleSprite                           ; if so - only draw a single sprite
-  sta SprTile,x                                   ; otherwise set left sprite
+  sta SprX,x                                   ; otherwise set left sprite
   clc                                             ;
   adc #$8                                         ;
-  sta SprTile+4,x                                 ; then right sprite
+  sta SprX+4,x                                 ; then right sprite
   lda Ent0Data+Ent_YPx,y                          ; and set y position
   clc                                             ;
   adc #StatusBarHeight                            ; underneath the status bar
@@ -435,7 +435,7 @@ L_14_1C2DB:
   sta SprY+4,x                                    ;
   rts                                             ; done!
 @ShowSingleSprite:
-  sta SprTile,x                                   ; otherwise set left sprite
+  sta SprX,x                                   ; otherwise set left sprite
   lda Ent0Data+Ent_YPx,y                          ; and set y position
   clc                                             ;
   adc #StatusBarHeight                            ; underneath the status bar
@@ -2071,7 +2071,7 @@ B_14_1CEC5:
 .byte $02,$18,$60,$A9,$01,$85,$EA,$38             ;  1CEFF CEFF ........ ??`????8 
 .byte $60                                         ;  1CF07 CF07 .        `        
 
-EnsureNextPositionIsValid:
+CheckIfAtAreaTransition:
   lda TmpA                                        ; get the new Y position
   cmp #$C0                                        ; is it going to be off screen?
   bcs @DoneSEC                                    ; if so - exit function
@@ -3559,7 +3559,7 @@ L_14_1D991:
   PHA                                             ;  1D996 D996 C 48              F:001373
 B_14_1D997:
   JSR RunPlayerMovement2                                  ;  1D997 D997 C 20 B6 D8        F:001373
-  JSR EnsureNextPositionIsValid                                  ;  1D99A D99A C 20 08 CF        F:001373
+  JSR CheckIfAtAreaTransition                                  ;  1D99A D99A C 20 08 CF        F:001373
   BCC B_14_1D9A7                                  ;  1D99D D99D C 90 08           F:001373
   JSR L_14_1D6D4                                  ;  1D99F D99F C 20 D4 D6        F:001470
   BCC B_14_1D9EB                                  ;  1D9A2 D9A2 C 90 47           F:001473
@@ -5192,7 +5192,7 @@ RunPlayerControlInventory:
   JSR UpdateInventorySprites                     ;  1E4F8 E4F8 C 20 34 C2        F:041644
   JSR PauseMenu_DrawInventory                                 ;  1E4FB E4FB C 20 30 CF        F:041644
   JSR PauseMenu_DrawCharacterAttributes          ;  1E4FE E4FE C 20 82 CF        F:041660
-: JMP RunPlayerControlInventory                  ;  1E501 E501 C 4C AA E4        F:041663
+  JMP RunPlayerControlInventory                  ;  1E501 E501 C 4C AA E4        F:041663
 
 @B_15_1E504:
   ldx PlayerSelectedItemSlot                      ; check which item is selected
@@ -5452,46 +5452,46 @@ B_15_1E6AA:
   RTS                                             ;  1E6B6 E6B6 C 60              F:000193
 
 PauseMenu_DrawActiveItems:
-  LDA #$58                                        ;  1E6B7 E6B7 C A9 58           F:000826
-  STA R_0008                                      ;  1E6B9 E6B9 C 85 08           F:000826
-  LDX #$2                                         ;  1E6BB E6BB C A2 02           F:000826
-  LDY #$10                                        ;  1E6BD E6BD C A0 10           F:000826
-B_15_1E6BF:
-  LDA PlayerActiveItems,X                                    ;  1E6BF E6BF C B5 51           F:000826
-  BMI B_15_1E6D6                                  ;  1E6C1 E6C1 C 30 13           F:000826
-  ASL                                             ;  1E6C3 E6C3 . 0A              
-  ASL                                             ;  1E6C4 E6C4 . 0A              
-  CLC                                             ;  1E6C5 E6C5 . 18              
-  ADC #$A1                                        ;  1E6C6 E6C6 . 69 A1           
-  STA R_0241,Y                                    ;  1E6C8 E6C8 . 99 41 02        
-  CLC                                             ;  1E6CB E6CB . 18              
-  ADC #$2                                         ;  1E6CC E6CC . 69 02           
-  STA R_0245,Y                                    ;  1E6CE E6CE . 99 45 02        
-  LDA #$BB                                        ;  1E6D1 E6D1 . A9 BB           
-  JMP $E6D8                                       ;  1E6D3 E6D3 . 4C D8 E6        
-
-B_15_1E6D6:
-  LDA #$EF                                        ;  1E6D6 E6D6 C A9 EF           F:000826
-  STA R_0240,Y                                    ;  1E6D8 E6D8 C 99 40 02        F:000826
-  STA R_0244,Y                                    ;  1E6DB E6DB C 99 44 02        F:000826
-  LDA R_0008                                      ;  1E6DE E6DE C A5 08           F:000826
-  STA R_0243,Y                                    ;  1E6E0 E6E0 C 99 43 02        F:000826
-  CLC                                             ;  1E6E3 E6E3 C 18              F:000826
-  ADC #$8                                         ;  1E6E4 E6E4 C 69 08           F:000826
-  STA R_0247,Y                                    ;  1E6E6 E6E6 C 99 47 02        F:000826
-  SEC                                             ;  1E6E9 E6E9 C 38              F:000826
-  SBC #$28                                        ;  1E6EA E6EA C E9 28           F:000826
-  STA R_0008                                      ;  1E6EC E6EC C 85 08           F:000826
-  LDA #$1                                         ;  1E6EE E6EE C A9 01           F:000826
-  STA R_0242,Y                                    ;  1E6F0 E6F0 C 99 42 02        F:000826
-  STA R_0246,Y                                    ;  1E6F3 E6F3 C 99 46 02        F:000826
-  TYA                                             ;  1E6F6 E6F6 C 98              F:000826
-  SEC                                             ;  1E6F7 E6F7 C 38              F:000826
-  SBC #$8                                         ;  1E6F8 E6F8 C E9 08           F:000826
-  TAY                                             ;  1E6FA E6FA C A8              F:000826
-  DEX                                             ;  1E6FB E6FB C CA              F:000826
-  BPL B_15_1E6BF                                  ;  1E6FC E6FC C 10 C1           F:000826
-  RTS                                             ;  1E6FE E6FE C 60              F:000826
+  @TmpXPosition = $8
+  lda #$58                                        ; set starting X position
+  sta @TmpXPosition                               ;
+  ldx #$2                                         ; final active slot
+  ldy #$10                                        ; final sprite position
+@NextSlot:
+  lda PlayerActiveItems,x                         ; check which item is in the slot
+  bmi @EmptySlot                                  ; branch ahead if no item
+  asl a                                           ; otherwise multiply by 4
+  asl a                                           ;
+  clc                                             ;
+  adc #$A1                                        ; and add base offset for sprite tile
+  sta SprTile + ($10*4),y                         ; update sprites
+  clc                                             ;
+  adc #$2                                         ;
+  sta SprTile + ($11*4),y                         ;
+  lda #$BB                                        ; set Y position
+  jmp :+                                          ; skip ahead to position
+@EmptySlot:
+  lda #$EF                                        ; offscreen Y position
+: sta SprY + ($10*4),y                            ; set Y positions
+  sta SprY + ($11*4),y                            ;
+  lda @TmpXPosition                               ; set X positions
+  sta SprX + ($10*4),y                            ;
+  clc                                             ;
+  adc #$8                                         ;
+  sta SprX + ($11*4),y                            ;
+  sec                                             ;
+  sbc #$28                                        ; move X to next slot
+  sta @TmpXPosition                               ;
+  lda #$1                                         ; and set fixed attributes
+  sta SprAttr + ($10*4),y                         ;
+  sta SprAttr + ($11*4),y                         ;
+  tya                                             ; move Y to next sprite slots
+  sec                                             ;
+  sbc #$8                                         ;
+  tay                                             ;
+  dex                                             ; then advance to next slot
+  bpl @NextSlot                                   ; and loop until done!
+  rts                                             ; done!
 
 L_15_1E6FF:
   LDA #$EF                                        ;  1E6FF E6FF C A9 EF           F:017567
@@ -5563,16 +5563,16 @@ UpdateInnSprites:
   sta SprY + ($14 * 4)                            ;
   sta SprY + ($15 * 4)                            ;
   lda #$F1                                        ;
-  sta SprX + ($14 * 4)                            ;
+  sta SprTile + ($14 * 4)                            ;
   lda #$F3                                        ;
-  sta SprX + ($15 * 4)                            ;
+  sta SprTile + ($15 * 4)                            ;
   lda #$2                                         ;
   sta SprAttr + ($14 * 4)                         ;
   sta SprAttr + ($15 * 4)                         ;
   lda #$78                                        ;
-  sta SprTile + ($14 * 4)                         ;
+  sta SprX + ($14 * 4)                         ;
   lda #$80                                        ;
-  sta SprTile + ($15 * 4)                         ;
+  sta SprX + ($15 * 4)                         ;
   rts                                             ; done!
 
 L_15_1E79D:
@@ -5950,6 +5950,7 @@ B_15_1EA42:
 B_15_1EA4E:
   RTS                                             ;  1EA4E EA4E C 60              F:001373
 
+L_EA4F:
 .byte $A9,$1E,$20,$64,$CC,$AA,$D0,$3C             ;  1EA4F EA4F ........ ?? d???< 
 .byte $A2,$03,$A0,$03,$AD,$02
 .byte $04,$29             ;  1EA57 EA57 ........ ???????) 
@@ -6651,7 +6652,7 @@ B_15_1EF45:
   ADC #$1                                         ;  1EF52 EF52 C 69 01           F:026947
   STA Workset+Ent_YPxSpeed                                      ;  1EF54 EF54 C 85 F7           F:026947
   jsr CalcNextPosition                            ; add entity speeds onto position
-  jsr EnsureNextPositionIsValid                   ; and make sure the position is valid
+  jsr CheckIfAtAreaTransition                   ; and make sure the position is valid
   bcs B_15_1EF63                            ; if not - skip ahead
   lda TmpA                                        ; otherwise move entity to next position
   sta Workset+Ent_YPx                             ;
@@ -6672,7 +6673,7 @@ B_15_1EF6E:
   ADC #$2                                         ;  1EF74 EF74 C 69 02           F:026971
   STA Workset+Ent_YPxSpeed                                      ;  1EF76 EF76 C 85 F7           F:026971
   JSR CalcNextPosition                                  ;  1EF78 EF78 C 20 F1 EF        F:026971
-  JSR EnsureNextPositionIsValid                                  ;  1EF7B EF7B C 20 08 CF        F:026971
+  JSR CheckIfAtAreaTransition                                  ;  1EF7B EF7B C 20 08 CF        F:026971
   BCS @SpawnDrop                                  ;  1EF7E EF7E C B0 05           F:026971
   LDA TmpA                                      ;  1EF80 EF80 C A5 0A           F:026971
   STA Workset+Ent_YPx                                      ;  1EF82 EF82 C 85 FB           F:026971
@@ -6912,7 +6913,7 @@ L_15_1F0E1:
   PHA                                             ;  1F0E3 F0E3 C 48              F:001379
 B_15_1F0E4:
   JSR CalcNextPosition                                  ;  1F0E4 F0E4 C 20 F1 EF        F:001379
-  JSR EnsureNextPositionIsValid                                  ;  1F0E7 F0E7 C 20 08 CF        F:001379
+  JSR CheckIfAtAreaTransition                                  ;  1F0E7 F0E7 C 20 08 CF        F:001379
   BCS B_15_1F10E                                  ;  1F0EA F0EA C B0 22           F:001379
   LDX Workset+Ent_State                                      ;  1F0EC F0EC C A6 EE           F:001379
   DEX                                             ;  1F0EE F0EE C CA              F:001379
@@ -6955,7 +6956,7 @@ L_15_1F11B:
   RTS                                             ;  1F127 F127 C 60              F:023658
 
 B_15_1F128:
-  JSR EnsureNextPositionIsValid                                  ;  1F128 F128 C 20 08 CF        F:005264
+  JSR CheckIfAtAreaTransition                                  ;  1F128 F128 C 20 08 CF        F:005264
   BCC B_15_1F135                                  ;  1F12B F12B C 90 08           F:005264
   LDA #$0                                         ;  1F12D F12D C A9 00           F:005651
   STA Workset+Ent_State                                      ;  1F12F F12F C 85 EE           F:005651
@@ -7348,7 +7349,7 @@ PlayerFireProjectile:
 : LDA JoypadLastAction                                      ;  1F677 F677 C A5 FD           F:001756
   JSR SetWorksetDirectionSpeed                                  ;  1F679 F679 C 20 70 CD        F:001756
   JSR L_15_1F740                                  ;  1F67C F67C C 20 40 F7        F:001756
-  JSR EnsureNextPositionIsValid                                  ;  1F67F F67F C 20 08 CF        F:001756
+  JSR CheckIfAtAreaTransition                                  ;  1F67F F67F C 20 08 CF        F:001756
   BCS B_15_1F6B8                                  ;  1F682 F682 C B0 34           F:001756
   JSR UsePlayerMana                                  ;  1F684 F684 C 20 F0 E7        F:001756
   BCS B_15_1F6B8                                  ;  1F687 F687 C B0 2F           F:001756
@@ -7384,7 +7385,7 @@ RunSingleProjectile:
   dec Workset+Ent_State                           ; reduce state by 1
   beq L_15_1F735                                  ; skip ahead if state was 1
   JSR CalcNextPosition                                  ;  1F6C2 F6C2 C 20 F1 EF        F:001757
-  JSR EnsureNextPositionIsValid                                  ;  1F6C5 F6C5 C 20 08 CF        F:001757
+  JSR CheckIfAtAreaTransition                                  ;  1F6C5 F6C5 C 20 08 CF        F:001757
   BCS B_15_1F722                                  ;  1F6C8 F6C8 C B0 58           F:001757
   JSR L_14_1CDB2                                  ;  1F6CA F6CA C 20 B2 CD        F:001757
   BCC B_15_1F729                                  ;  1F6CD F6CD C 90 5A           F:001757

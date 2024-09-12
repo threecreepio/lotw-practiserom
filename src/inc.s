@@ -134,9 +134,9 @@ PlayerStunTimer = $46
 PlayerIsJumping = $22
 
 SprY    = $200
-SprX    = $201
+SprTile    = $201
 SprAttr = $202
-SprTile = $203
+SprX = $203
 
 DragonEncounterActive = $EC
 R_00CD = $CD
