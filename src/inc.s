@@ -543,6 +543,7 @@ SFX_EntityHurt           = $06
 SFX_JumpLand             = $0A
 SFX_GoldPickup           = $11
 SFX_ManaPickup           = $11
+SFX_Equip                = $12
 SFX_RingPickup           = $13
 SFX_ScrollPickup         = $13
 SFX_InventoryPickup      = $13

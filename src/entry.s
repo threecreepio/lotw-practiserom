@@ -13,6 +13,27 @@
 .byte %0 ; 14
 .byte %0 ; 15
 
+.macro jsl addr, bank
+.ifnblank bank
+.endif
+  lda #<addr                                      ; copy address to routine
+  sta TmpE                                      ;
+  lda #>addr                                      ;
+  sta TmpF                                    ;
+.ifnblank bank
+.else
+  jsr CommonBankJSR                               ; and call it!
+.endif
+.endmacro
+
+.macro jsl_menu addr
+  lda #<addr                                      ; copy address to routine
+  sta TmpE                                      ;
+  lda #>addr                                      ;
+  sta TmpF                                    ;
+  jsr BankCallMenu                                ; and call it
+.endmacro
+
 
 .include "inc.s"
 
@@ -97,7 +118,19 @@
 .include "BANK_09.s"
 
 .segment "PRG10"
-.include "BANK_0a.s"
+.include "audio.s"
+.include "initram.s"
+TitlescreenNametables:
+.incbin "titlescreen.nam"
+TitleScreenPalette:
+.incbin "titlescreen.pal"
+TitlescreenMMC3Banks:
+.byte $1C,$1E
+.include "dragonencounter.s"
+.include "titlescreen.s"
+
+.segment "GAME"
+.include "game.s"
 
 .segment "CHR"
 .incbin "chr/0.bin"
