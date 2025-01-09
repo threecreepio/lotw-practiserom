@@ -246,9 +246,9 @@ R_00CF = $CF
 AreaDataPtr = $77
 
 SelectedBank0 = $2A
-SelectedBank1 = $2B          ; used for PRG $8000
-SelectedBank2 = $2C          ; used for PRG $A000
-SelectedBank3 = $2D          ; used for CHR
+SelectedBank1 = $2B 
+SelectedBank2 = $2C
+SelectedBank3 = $2D
 SelectedBank4 = $2E
 SelectedBank5 = $2F
 SelectedBank6 = $30
@@ -595,3 +595,6 @@ BlockPtrLo        = $0C
 BlockPtrHi        = $0D
 BlockPtr2Lo  = $10
 BlockPtr2Hi  = $11
+
+
+

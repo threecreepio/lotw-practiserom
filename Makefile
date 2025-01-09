@@ -5,6 +5,12 @@
 main.nes: layout entry.o
 	ld65 --mapfile "$@.map" --dbgfile "main.dbg" -C layout entry.o -o $@
 
+practiserom.zip: patch.ips
+	zip practiserom.zip patch.ips README.md
+
+patch.ips: main.nes
+	python3 scripts/ips.py create --output patch.ips "original.nes" main.nes
+
 clean:
 	rm -f main.nes *.dep *.o *.dbg *.map
 

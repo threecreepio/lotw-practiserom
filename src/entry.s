@@ -1,7 +1,7 @@
 .segment "INES"
 .byte $4E,$45,$53,$1A ; INES
-.byte 8 ; PRG banks
-.byte 8 ; CHR banks
+.byte 16 ; PRG banks
+.byte 8  ; CHR banks
 .byte %1000000 ; 6
 .byte %0 ; 7
 .byte %0 ; 8
@@ -128,6 +128,11 @@ TitlescreenMMC3Banks:
 .byte $1C,$1E
 .include "dragonencounter.s"
 .include "titlescreen.s"
+
+.segment "PRACTISE"
+.include "practise.s"
+
+.segment "PAD"
 
 .segment "GAME"
 .include "game.s"

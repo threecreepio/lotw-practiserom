@@ -1,3 +1,5 @@
+.org $C000
+
 ResetGame:
   sei                                             ; standard boot
   ldx #$FF                                        ;
@@ -2109,14 +2111,14 @@ PauseMenu_DrawInventory:
 : txa                                             ;
   pha                                             ; store slot on stack
   ldy PlayerInventory,x                           ; get quantity
-  jsr @DrawSingleItem                             ; and draw the item
+  jsr PauseMenu_DrawSingleItem                    ; and draw the item
   pla                                             ;
   tax                                             ; restore slot from stack
   dex                                             ;
   bpl :-                                          ; and loop until all are drawn
   rts                                             ;
 
-@DrawSingleItem:
+PauseMenu_DrawSingleItem:
   txa                                             ; do some dumb stuff
   pha                                             ;
   txa                                             ;
@@ -2530,7 +2532,7 @@ VNMI:
   stx PPUOperation                                ;
   cmp #$7                                         ; was the operation in a valid range?
   bcc @RunPPUOperation                            ; if so - run that operation
-: jmp CommonNMI                                   ; otherwise continue to default nmi
+: jmp PRAC_CommonNMI                                   ; otherwise continue to default nmi
 @RunPPUOperation:
   @TmpPtr = $6
   asl a                                           ; get offset into jump table
@@ -2550,7 +2552,7 @@ VNMI:
   jmp (@TmpPtr)                                   ; run the pending operation
 
 @PPUOperations:
-.addr CommonNMI                                   ;
+.addr PRAC_CommonNMI                                   ;
 .addr PPUOp_RepeatByte                                     ;
 .addr PPUOp_UpdatePalette                      ;
 .addr PPUOp_DrawAreaColumn                                     ;
@@ -2586,7 +2588,7 @@ PPUOp_UpdatePalette:
   sta PPU_ADDR                                    ;
   sta PPU_ADDR                                    ;
   sta PPU_ADDR                                    ;
-  jmp CommonNMI                                   ; then continue with NMI
+  jmp PRAC_CommonNMI                                   ; then continue with NMI
 
 PPUOp_DrawAreaColumn:
   lda PPUCTRLCopy                                 ; set vertical rendering
@@ -2670,7 +2672,7 @@ CommonNMI:
   lda FrameCountdownTimer                         ; check if the game is waiting for a timer to finish
   beq :+                                          ; if not - skip ahead
   dec FrameCountdownTimer                         ; otherwise advance the timer
-: jsr RunIntervalTimers                           ; step all the interval timers down
+: jsr DisableableRunIntervalTimers                           ; step all the interval timers down
   lda MMC3LastBankSelect                          ; restore selected bank in case the caller needs it
   sta MMC3_RegBankSelect                          ;
   pla                                             ; restore caller state
@@ -2951,7 +2953,8 @@ RunInGamePause:
   LDA #$10                                        ;  1D55A D55A C A9 10           F:027558
   STA PendingSFX                                      ;  1D55C D55C C 85 8F           F:027558
 B_14_1D55E:
-  JSR WaitForNewInputRelease                                  ;  1D55E D55E C 20 09 CC        F:027558
+  jsr Practise_SelectPause
+  ;JSR WaitForNewInputRelease                                  ;  1D55E D55E C 20 09 CC        F:027558
   AND #$F0                                        ;  1D561 D561 C 29 F0           F:027608
   BNE B_14_1D58F                                  ;  1D563 D563 C D0 2A           F:027608
   LDA JoypadInput                                      ;  1D565 D565 . A5 20           
@@ -2968,7 +2971,7 @@ B_14_1D55E:
   CMP #$4                                         ;  1D57B D57B . C9 04           
   BCC B_14_1D586                                  ;  1D57D D57D . 90 07           
   LDA #$0                                         ;  1D57F D57F . A9 00           
-  JMP $D586                                       ;  1D581 D581 . 4C 86 D5        
+  JMP $D586                                  ;  1D581 D581 . 4C 86 D5        
 
 B_14_1D584:
   LDA #$3                                         ;  1D584 D584 . A9 03           
@@ -5017,6 +5020,7 @@ B_15_1E364:
 .byte $F7,$20,$00,$E4,$60,$A6,$F7,$E8             ;  1E3C2 E3C2 ........ ? ??`??? 
 .byte $E0,$05,$90,$02,$A2,$00,$86,$F7             ;  1E3CA E3CA ........ ???????? 
 .byte $20,$00,$E4,$60                             ;  1E3D2 E3D2 ....      ??`     
+
 L_15_1E3D6:
   LDX #$61                                        ;  1E3D6 E3D6 C A2 61           F:000332
   LDA Workset+Ent_XPx                                      ;  1E3D8 E3D8 C A5 F9           F:000332
@@ -5063,6 +5067,7 @@ L_15_1E400:
   RTS                                             ;  1E41D E41D C 60              F:000332
 
 .byte $A5,$F9,$29,$1F,$AA,$60                     ;  1E41E E41E ......   ??)??`   
+
 EnterShopDoor:
   JSR PutPlayerLocationOnStack                                  ;  1E424 E424 C 20 20 E6        F:017545
   LDA ShopItem1Type                                      ;  1E427 E427 C A5 80           F:017545
@@ -5170,7 +5175,7 @@ RunPlayerControlInventory:
   bcs @Decrement                                  ; if we can equip the item, remove it from the inventory
 @CannotEquip:
   lda #$6                                         ; play bad sound
-  sta PendingSFX                                  ; 
+  sta PendingSFX                                  ;
   jmp RunPlayerControlInventory                   ;
 @Decrement:
   dec PlayerInventory,x                           ; remove 1 copy of the item
@@ -5261,7 +5266,7 @@ RunPauseScreenMovement:
   jsr RunPlayerMovement                           ; and run movement code
   jsr RunPlayerMovement2                          ;
   lda TmpA                                        ; get next player Y position
-  cmp #$20                                        ; prevent moving off top of screen
+  cmp #$1                                         ; prevent moving off top of screen
   bcc @MovementDone                               ;
   cmp #$A1                                        ; are we exiting the bottom end of the screen?
   bcs @ExitSEC                                    ; if so - leave the function
@@ -5335,6 +5340,7 @@ B_15_1E5FC:
 
 L_15_1E5FD:
   JSR RestorePlayerLocationFromStack                                  ;  1E5FD E5FD C 20 42 E6        F:000915
+L_15_1E5FD_2:
   JSR L_14_1C3E5                                  ;  1E600 E600 C 20 E5 C3        F:000915
   JSR L_15_1E79D                                  ;  1E603 E603 C 20 9D E7        F:000935
   LDA Workset_FE                                      ;  1E606 E606 C A5 FE           F:000935
@@ -7729,19 +7735,9 @@ MattockTileDirections:
 .byte $FF,$00 ; U+D+L
 .byte $00,$00 ; U+D+R+L
 
+PractiseCommonBank
 
-StatusBarBGData:
-.byte $FD,$FC,$FC,$FC,$FC,$FC,$FD,$FC,$FC,$FC,$FC,$FC,$FD,$FC,$FC,$FC
-.byte $FC,$FC,$FD,$FC,$FC,$FC,$FC,$FC,$FD,$FC,$FC,$FC,$FC,$FC,$FC,$FD
-.byte $FB,$EC,$E9,$E6,$E5,$C0,$FB,$ED,$E1,$E7,$E9,$E3,$FB,$EB,$E5,$F9
-.byte $C0,$C0,$FB,$E7,$EF,$EC,$E4,$C0,$FB,$E9,$F4,$E5,$ED,$C0,$C0,$FB
-.byte $FB,$DD,$DD,$DE,$DF,$DF,$FB,$DD,$DD,$DD,$DE,$DF,$FB,$DD,$DE,$DF
-.byte $DF,$DF,$FB,$DD,$DF,$DF,$DF,$DF,$FB,$C0,$C0,$C0,$C0,$C0,$C0,$FB
-.byte $FB,$DA,$DA,$DA,$DA,$DC,$FB,$DB,$DF,$DF,$DF,$DF,$FB,$DA,$DA,$DA
-.byte $DA,$DB,$FB,$DA,$DA,$DA,$DB,$DC,$FB,$C0,$C0,$C0,$C0,$C0,$C0,$FB
-.byte $FE,$FC,$FC,$FC,$FC,$FC,$FE,$FC,$FC,$FC,$FC,$FC,$FE,$FC,$FC,$FC
-.byte $FC,$FC,$FE,$FC,$FC,$FC,$FC,$FC,$FE,$FC,$FC,$FC,$FC,$FC,$FC,$FE
-StatusBarBGDataEnd:
+.res $FF6B-*,$00
 
 Spr0Data:
 .byte StatusBarHeight-2                            ; clip spr0 into StatusBar a little
@@ -7791,6 +7787,7 @@ CharacterPalettes:
 
 .byte $00,$00,$00,$00,$00,$00,$00                 ; unused padding
 
+.res $FFE0-*, $00
 VReset:
   SEI                                             ; setup mmc3
   LDA #$0                                         ;
