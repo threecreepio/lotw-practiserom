@@ -2,7 +2,9 @@
 
 This patch is intended to apply to the original Legacy of the Wizard US ROM, SHA 1 sum: 512a6a3dd1cc822f468003ac2c21f3e082432232
 
-You can use any IPS patcher to apply, https://bbbradsmith.github.io/ipstool/ for example.
+You can download the latest version here: https://github.com/threecreepio/lotw-practiserom/raw/refs/heads/main/practiserom.zip
+
+Any IPS patcher can be used to apply the IPS, https://bbbradsmith.github.io/ipstool/ for example.
 
 ## Features
 
