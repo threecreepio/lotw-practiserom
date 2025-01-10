@@ -1,5 +1,19 @@
 .macro PractiseCommonBank
 
+WaitForCountdownTimer2:
+  lda #1
+  sta $180
+  jsr WaitForCountdownTimer
+  lda #0
+  sta $180
+  rts
+
+PRAC_PPUOp_UpdatePalette:
+  lda $180
+  bne :+
+  jmp PRAC_CommonNMI
+: jmp PPUOp_UpdatePalette
+
 MMC3ActivatePRGBank:
   ldx #$6                                         ;
   stx MMC3_RegBankSelect                          ;
@@ -662,3 +676,4 @@ PracPauseMap:
 .byte $07,$07,$07,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; $80
 .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; $A0
 .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ; $B0
+

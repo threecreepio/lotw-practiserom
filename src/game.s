@@ -87,7 +87,7 @@ RebootGame:
   cmp CameraXTile                                 ;
   beq :+                                          ; if not - skip ahead
   inc ColumnWritePending                          ; otherwise mark that we need to write a new column to the ppu
-: jsr WaitForCountdownTimer                       ; wait for timer to finish
+: jsr WaitForCountdownTimer                      ; wait for timer to finish
   jmp @RunGameFrame                               ; run next frame!
 
 @DragonEncounter:
@@ -139,6 +139,7 @@ WaitForCountdownTimer:
   lda FrameCountdownTimer                         ; are we still waiting?
   bne @WaitForTimer                               ; if so - loop!
   rts                                             ; otherwise we are done!
+  
 
 UpdateCameraPosition:
   lda CameraXTile                                 ; combine camera x position to single byte
@@ -543,7 +544,7 @@ L_14_1C3E5:
   LSR R_00D0                                      ;  1C413 C413 C 46 D0           F:000172
   LDA #$0                                         ;  1C415 C415 C A9 00           F:000172
   STA R_00B4                                      ;  1C417 C417 C 85 B4           F:000172
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer2                       ; wait for timer to finish
   PLA                                             ;  1C41C C41C C 68              F:000177
   TAY                                             ;  1C41D C41D C A8              F:000177
   dey                                             ;
@@ -581,7 +582,7 @@ L_14_1C430:
   sta PaletteRAMCopy+4,x                          ; write new value
   dex                                             ;
   bpl @Loop                                       ; and loop until done
-  jsr WaitForCountdownTimer                       ; wait for fade to complete
+  jsr WaitForCountdownTimer2                       ; wait for fade to complete
   pla                                             ; restore iteration counter from stack
   tay                                             ;
   dey                                             ;
@@ -612,7 +613,7 @@ FadeInPalette2:
   sta PaletteRAMCopy,x                            ; write new value
   dex                                             ; advance to next color
   bpl @Loop                                       ; loop until all colors faded
-  jsr WaitForCountdownTimer                       ; wait for fade to complete
+  jsr WaitForCountdownTimer2                       ; wait for fade to complete
   pla                                             ; restore iteration counter from stack
   tay                                             ;
   dey                                             ;
@@ -629,7 +630,7 @@ FadeInAreaPalette:
   ldx #$4                                         ; offset into palette to start changing
   ldy #$1C                                        ; number of bytes to update
   jsr FadeOutPalette2                             ; set up fade
-  jsr WaitForCountdownTimer                       ; wait for fade to complete
+  jsr WaitForCountdownTimer2                       ; wait for fade to complete
   lda @Fade                                       ; every pass we want to subtract by $10 less, fading the colors in
   sec                                             ;
   sbc #$10                                        ;
@@ -685,12 +686,12 @@ LightningFlashScreen:
   jsr UpdatePaletteFromCopy                       ; write palette
   lda #$1                                         ; delay for a bit
   sta FrameCountdownTimer                         ;
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer2                       ; wait for timer to finish
   jsr AreaPaletteSetup                            ; get palette for new area
   jsr UpdatePaletteFromCopy                       ; and write it to ppu
   lda #$2                                         ; then delay a bit again
   sta FrameCountdownTimer                         ;
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer2                       ; wait for timer to finish
   pla                                             ; restore caller X
   tax                                             ;
   dex                                             ; and decrement
@@ -1637,7 +1638,7 @@ WaitUntilNoInputsHeld:
   jsr UpdatePlayerSprites                         ; redraw everything
   jsr UpdateEntitySprites                         ;
   jsr UpdateInventorySprites                      ;
-  jsr WaitForCountdownTimer                       ; delay
+  jsr WaitForCountdownTimer                      ; delay
   jsr ReadJoypad                                  ; get the inputs held
   bne :-                                          ; if any inputs held - loop back around
   rts                                             ; no inputs are pressed, we're done!
@@ -1648,7 +1649,7 @@ WaitUntilInputsHeld:
   jsr UpdatePlayerSprites                         ; redraw everything
   jsr UpdateEntitySprites                         ;
   jsr UpdateInventorySprites                      ;
-  jsr WaitForCountdownTimer                       ; delay
+  jsr WaitForCountdownTimer                      ; delay
   jsr ReadJoypad                                  ; get the inputs held
   beq :-                                          ; if no inputs held - loop back around
   rts                                             ; some inputs are pressed, we're done!
@@ -2446,7 +2447,7 @@ B_14_1D174:
   STA PendingSFX                                      ;  1D17B D17B C 85 8F           F:010159
   LDA #$2                                         ;  1D17D D17D C A9 02           F:010159
   STA FrameCountdownTimer                                      ;  1D17F D17F C 85 36           F:010159
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   LDX PlayerHP                                      ;  1D184 D184 C A6 58           F:010161
   CPX #$63                                        ;  1D186 D186 C E0 63           F:010161
   BCC B_14_1D174                                  ;  1D188 D188 C 90 EA           F:010161
@@ -2454,7 +2455,7 @@ B_14_1D174:
   STA PendingSFX                                      ;  1D18C D18C C 85 8F           F:010169
   LDA #$10                                        ;  1D18E D18E C A9 10           F:010169
   STA FrameCountdownTimer                                      ;  1D190 D190 C 85 36           F:010169
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   PLA                                             ;  1D195 D195 C 68              F:010185
   STA InvincibilityFramesTimer                                      ;  1D196 D196 C 85 85           F:010185
   RTS                                             ;  1D198 D198 C 60              F:010185
@@ -2472,7 +2473,7 @@ B_14_1D1A3:
   STA PendingSFX                                      ;  1D1AA D1AA C 85 8F           F:003223
   LDA #$2                                         ;  1D1AC D1AC C A9 02           F:003223
   STA FrameCountdownTimer                                      ;  1D1AE D1AE C 85 36           F:003223
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   LDX PlayerMP                                      ;  1D1B3 D1B3 C A6 59           F:003225
   CPX #$63                                        ;  1D1B5 D1B5 C E0 63           F:003225
   BCC B_14_1D1A3                                  ;  1D1B7 D1B7 C 90 EA           F:003225
@@ -2480,7 +2481,7 @@ B_14_1D1A3:
   STA PendingSFX                                      ;  1D1BB D1BB C 85 8F           F:003295
   LDA #$10                                        ;  1D1BD D1BD C A9 10           F:003295
   STA FrameCountdownTimer                                      ;  1D1BF D1BF C 85 36           F:003295
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   PLA                                             ;  1D1C4 D1C4 C 68              F:003311
   STA InvincibilityFramesTimer                                      ;  1D1C5 D1C5 C 85 85           F:003311
   RTS                                             ;  1D1C7 D1C7 C 60              F:003311
@@ -2554,7 +2555,7 @@ VNMI:
 @PPUOperations:
 .addr PRAC_CommonNMI                                   ;
 .addr PPUOp_RepeatByte                                     ;
-.addr PPUOp_UpdatePalette                      ;
+.addr PRAC_PPUOp_UpdatePalette                    ;
 .addr PPUOp_DrawAreaColumn                                     ;
 .addr PPUOp_DrawRowFromStack                                     ;
 .addr PPUOp_WriteBuffer                                     ;
@@ -2582,13 +2583,13 @@ PPUOp_UpdatePalette:
   dex                                             ;
   bne :-                                          ; copy until all done
   lda PPU_STATUS                                  ; flip flop
-  lda #$3F                                        ; move ppu to $0000
+  lda #$3F                                        ; move ppu
   sta PPU_ADDR                                    ;
   lda #$0                                         ;
   sta PPU_ADDR                                    ;
   sta PPU_ADDR                                    ;
   sta PPU_ADDR                                    ;
-  jmp PRAC_CommonNMI                                   ; then continue with NMI
+  jmp CommonNMI                                   ; then continue with NMI
 
 PPUOp_DrawAreaColumn:
   lda PPUCTRLCopy                                 ; set vertical rendering
@@ -3698,7 +3699,7 @@ B_14_1DA49:
   JSR Audio_StartMusic                                  ;  1DA71 DA71 C 20 08 FC        F:003103
   LDA #$78                                        ;  1DA74 DA74 C A9 78           F:003103
   STA FrameCountdownTimer                                      ;  1DA76 DA76 C 85 36           F:003103
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   PLA                                             ;  1DA7B DA7B C 68              F:003223
   STA CurrentMusic                                      ;  1DA7C DA7C C 85 8E           F:003223
   JSR Audio_StartMusic                                  ;  1DA7E DA7E C 20 08 FC        F:003223
@@ -4648,7 +4649,7 @@ B_15_1E0A5:
   STA PendingSFX                                      ;  1E0AE E0AE C 85 8F           F:041168
   LDA #$A                                         ;  1E0B0 E0B0 C A9 0A           F:041168
   STA FrameCountdownTimer                                      ;  1E0B2 E0B2 C 85 36           F:041168
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   PLA                                             ;  1E0B7 E0B7 C 68              F:041178
   TAX                                             ;  1E0B8 E0B8 C AA              F:041178
   DEX                                             ;  1E0B9 E0B9 C CA              F:041178
@@ -4820,7 +4821,7 @@ B_15_1E1E7:
   STA R_0090                                      ;  1E1F6 E1F6 C 85 90           F:000611
   LDA #$4                                         ;  1E1F8 E1F8 C A9 04           F:000611
   STA FrameCountdownTimer                                      ;  1E1FA E1FA C 85 36           F:000611
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   LDX #$5                                         ;  1E1FF E1FF C A2 05           F:000615
   JSR LightningFlashScreen                                  ;  1E201 E201 C 20 40 C5        F:000615
   LDA PlayerCharacter                                      ;  1E204 E204 C A5 40           F:000640
@@ -4844,12 +4845,12 @@ B_15_1E1E7:
   STA PlayerXPx                                      ;  1E227 E227 C 85 43           F:000640
   JSR ClearEntitySprites                                  ;  1E229 E229 C 20 7C D0        F:000640
   JSR UpdatePlayerSprites                                  ;  1E22C E22C C 20 D8 C1        F:000640
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   LDX #$5                                         ;  1E232 E232 C A2 05           F:000640
   JSR LightningFlashScreen                                  ;  1E234 E234 C 20 40 C5        F:000640
   LDA #$78                                        ;  1E237 E237 C A9 78           F:000665
   STA FrameCountdownTimer                                      ;  1E239 E239 C 85 36           F:000665
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   JSR L_14_1C3E5                                  ;  1E23E E23E C 20 E5 C3        F:000785
   LDA #$8                                         ;  1E241 E241 C A9 08           F:000805
   STA PlayerSpriteTile                                      ;  1E243 E243 C 85 56           F:000805
@@ -4980,7 +4981,7 @@ B_15_1E333:
   LDA #$A                                         ;  1E33D E33D . A9 0A           
   STA FrameCountdownTimer                                      ;  1E33F E33F . 85 36           
 B_15_1E341:
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   JMP L_15_1E2EB                                  ;  1E344 E344 C 4C EB E2        F:000333
 
 
@@ -5242,7 +5243,7 @@ B_15_1E54F:
   JSR SelectPlayerSprite1                                  ;  1E54F E54F C 20 E3 D8        F:009154
   JSR RunPlayerAnimation                                  ;  1E552 E552 C 20 4E D9        F:009154
   JSR UpdatePlayerSprites                                  ;  1E555 E555 C 20 D8 C1        F:009154
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   JMP L_15_1E514                                  ;  1E55B E55B C 4C 14 E5        F:009155
 
 B_15_1E55E:
@@ -5289,7 +5290,7 @@ RunPauseScreenMovement:
   jsr SelectPlayerSprite1                         ; update sprite
   jsr RunPlayerAnimation                          ;
   jsr UpdatePlayerSprites                         ;
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   jmp RunPauseScreenMovement                      ; and loop back around
 @ExitCLC:
   clc                                             ;
@@ -5332,7 +5333,7 @@ B_15_1E5E7:
   STA PlayerYPx                                      ;  1E5F1 E5F1 C 85 45           F:000219
 B_15_1E5F3:
   JSR UpdatePlayerSprites                                  ;  1E5F3 E5F3 C 20 D8 C1        F:000219
-  jsr WaitForCountdownTimer                       ; wait for timer to finish
+  jsr WaitForCountdownTimer                      ; wait for timer to finish
   JMP L_15_1E5B4                                  ;  1E5F9 E5F9 C 4C B4 E5        F:000220
 
 B_15_1E5FC:
