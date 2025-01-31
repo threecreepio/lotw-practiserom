@@ -1,5 +1,5 @@
 RunTitleScreen:
-  jsr ResetDataAndPalette                         ; clear out state
+  jsr RunTitleScreen2
   lda #$37                                        ; select mmc3 bank
   sta SelectedBank2                               ;
   lda #$0                                         ; disable the status bar on the title screen
@@ -949,3 +949,11 @@ StatusBarBGData:
 .byte $FE,$FC,$FC,$FC,$FC,$FC,$FE,$FC,$FC,$FC,$FC,$FC,$FE,$FC,$FC,$FC
 .byte $FC,$FC,$FE,$FC,$FC,$FC,$FC,$FC,$FE,$FC,$FC,$FC,$FC,$FC,$FC,$FE
 StatusBarBGDataEnd:
+
+RunTitleScreen2:
+  jsr ResetDataAndPalette                         ; clear out state
+  lda #$80
+  sta $A001
+  lda #0
+  sta $6000
+  rts

@@ -2,7 +2,7 @@
 .byte $4E,$45,$53,$1A ; INES
 .byte 16 ; PRG banks
 .byte 8  ; CHR banks
-.byte %1000000 ; 6
+.byte %1000010 ; 6
 .byte %0 ; 7
 .byte %0 ; 8
 .byte %0 ; 9

@@ -1,25 +1,18 @@
 .macro PractiseCommonBank
 
 WaitForCountdownTimer2:
-  lda #1
-  sta $180
-  jsr WaitForCountdownTimer
   lda #0
-  sta $180
+  sta $6000
+  jsr WaitForCountdownTimer
+  lda #1
+  sta $6000
   rts
 
 PRAC_PPUOp_UpdatePalette:
-  lda $180
-  bne :+
-  jmp PRAC_CommonNMI
+  lda $6000
+  beq :+
+  jsr PRAC_DrawRNG
 : jmp PPUOp_UpdatePalette
-
-MMC3ActivatePRGBank:
-  ldx #$6                                         ;
-  stx MMC3_RegBankSelect                          ;
-  sty MMC3_RegBankData                            ;
-  sty SelectedBank6                               ;
-  rts                                             ; done!
 
 Practise_SelectPause:
   ldy #$E                                         ; switch to practise code bank
@@ -60,7 +53,7 @@ DisableableRunIntervalTimers:
   jmp RunIntervalTimers                           ; otherwise run them!
 : rts                                             ; wow!
 
-PRAC_CommonNMI:
+PRAC_DrawRNG:
   lda #>$2359                                     ; write rng value to the top right
   sta PPU_ADDR                                    ; on any frame where nothing else is needed
   lda #<$2359                                     ;
@@ -71,6 +64,10 @@ PRAC_CommonNMI:
   jsr PRAC_HexToPPU                               ;
   lda RNGValue+2                                  ;
   jsr PRAC_HexToPPU                               ;
+  rts
+
+PRAC_CommonNMI:
+  jsr PRAC_DrawRNG
   jmp CommonNMI                                   ; then continue to normal NMI code
 
 PRAC_HexToPPU:

@@ -2589,7 +2589,7 @@ PPUOp_UpdatePalette:
   sta PPU_ADDR                                    ;
   sta PPU_ADDR                                    ;
   sta PPU_ADDR                                    ;
-  jmp CommonNMI                                   ; then continue with NMI
+  jmp PRAC_CommonNMI                                   ; then continue with NMI
 
 PPUOp_DrawAreaColumn:
   lda PPUCTRLCopy                                 ; set vertical rendering
@@ -7797,8 +7797,12 @@ VReset:
   STA MMC3_IRQDisable                             ;
   JMP ResetGame                                   ; then start the game
 
-.byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $00,$00,$00
+MMC3ActivatePRGBank:
+  ldx #$6                                         ;
+  stx MMC3_RegBankSelect                          ;
+  sty MMC3_RegBankData                            ;
+  sty SelectedBank6                               ;
+  rts                                             ; done!
 
 .addr VNMI
 .addr VReset
